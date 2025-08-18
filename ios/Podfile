@@ -1,0 +1,30 @@
+# Uncomment this line to define a global platform for your project
+platform :ios, '14.0'
+
+# CocoaPods analytics sends network stats, disable in CI
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+flutter_root = File.expand_path(File.join('..', '..', 'flutter'))
+load File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb')
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+    end
+  end
+  flutter_additional_ios_build_settings(installer)
+end

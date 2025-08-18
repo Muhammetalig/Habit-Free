@@ -1,0 +1,44 @@
+workflows:
+  ios_release:
+    name: iOS Release (TestFlight)
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      vars:
+        # Bundle ID will be injected into the Xcode project before build
+        APP_ID: "com.example.bagimliss" # TODO: Change to your real Bundle ID (e.g., com.yourcompany.yourapp)
+    triggers:
+      tag: true # Run when a git tag is pushed (e.g., v1.0.0)
+    scripts:
+      - name: Flutter clean & pub get
+        script: |
+          flutter --version
+          flutter clean
+          flutter pub get
+      - name: Ensure CocoaPods deps
+        script: |
+          cd ios
+          pod install --repo-update
+          cd ..
+      - name: Set iOS Bundle Identifier dynamically
+        script: |
+          echo "Setting Bundle ID to $APP_ID"
+          # Update all occurrences in Xcode project (Runner + tests)
+          sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" ios/Runner.xcodeproj/project.pbxproj
+      - name: Build iOS (release IPA)
+        script: |
+          # Use tag as version name when available, and Codemagic build id as build number
+          BUILD_NAME=${CM_TAG:-1.0.0}
+          flutter build ipa --release --no-tree-shake-icons \
+            --build-name=$BUILD_NAME --build-number=$CM_BUILD_ID
+    publishing:
+      app_store_connect:
+        # Provide these via Codemagic Integrations (Environment > Integrations > App Store Connect API key)
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
