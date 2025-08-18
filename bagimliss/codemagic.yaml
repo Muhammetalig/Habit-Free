@@ -2,52 +2,64 @@ workflows:
   ios_release:
     name: iOS Release (TestFlight)
     max_build_duration: 60
+
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
       vars:
-        # Bundle ID will be injected into the Xcode project before build
-        APP_ID: "com.example.bagimliss" # TODO: Change to your real Bundle ID (e.g., com.yourcompany.yourapp)
+        # <-- Gerçek bundle ID'n (App ID)
+        APP_ID: "com.tasdemir.habitfree"
+
     triggers:
-      tag: true # Run when a git tag is pushed (e.g., v1.0.0)
+      # Git tag push'larında otomatik çalışsın (örn. v1.0.0)
+      tag: true
+
     scripts:
       - name: Flutter clean & pub get
         script: |
           flutter --version
           flutter clean
           flutter pub get
-          - name: Set up iOS code signing (automatic via App Store Connect)
+
+      - name: Set iOS Bundle Identifier
         script: |
-          # Initialize a keychain for signing assets
+          echo "Setting Bundle ID to $APP_ID"
+          # Xcode projesindeki tüm com.example.bagimliss geçişlerini APP_ID ile değiştir
+          sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" ios/Runner.xcodeproj/project.pbxproj
+
+      - name: Set up iOS code signing (App Store Connect)
+        script: |
+          # İmzalama için keychain'i hazırla
           keychain initialize
-          # Fetch or create signing files (certs + provisioning profiles) for App Store distribution
+          # App Store (distribution) tipi sertifika & provisioning profilleri indir/oluştur
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
-          # Import certificates into the keychain and apply provisioning profiles to the project
+          # Sertifikaları keychain'e ekle ve profilleri projeye uygula
           keychain add-certificates
           xcode-project use-profiles
+
       - name: Ensure CocoaPods deps
         script: |
           cd ios
           pod install --repo-update
           cd ..
-      - name: Set iOS Bundle Identifier dynamically
-        script: |
-          echo "Setting Bundle ID to $APP_ID"
-          # Update all occurrences in Xcode project (Runner + tests)
-          sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" ios/Runner.xcodeproj/project.pbxproj
+
       - name: Build iOS (release IPA)
         script: |
-          # Use tag as version name when available, and Codemagic build id as build number
           BUILD_NAME=${CM_TAG:-1.0.0}
-          flutter build ipa --release --no-tree-shake-icons \
-            --build-name=$BUILD_NAME --build-number=$CM_BUILD_ID
+          flutter build ipa --release \
+            --build-name="$BUILD_NAME" --build-number="$CM_BUILD_ID"
+
     publishing:
       app_store_connect:
-        # Provide these via Codemagic Integrations (Environment > Integrations > App Store Connect API key)
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        # App Store Connect API key'ini Codemagic Integrations'tan bağladıysan
+        # bu "api_key" blokunu YAZMAN GEREKMEZ. Codemagic otomatik kullanır.
+        #
+        # Eğer ENV değişkenleriyle vermek istersen, aşağıdaki 3 satırı aç:
+        # api_key:
+        #   key_id: $APP_STORE_CONNECT_KEY_ID
+        #   issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        #   key: $APP_STORE_CONNECT_PRIVATE_KEY
         submit_to_testflight: true
         beta_groups:
           - Internal Testers
