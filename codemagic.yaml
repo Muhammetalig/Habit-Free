@@ -18,6 +18,15 @@ workflows:
       flutter --version
       flutter clean
       flutter pub get
+      - name: Set up iOS code signing (automatic via App Store Connect)
+        script: |
+          # Initialize a keychain for signing assets
+          keychain initialize
+          # Fetch or create signing files (certs + provisioning profiles) for App Store distribution
+          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
+          # Import certificates into the keychain and apply provisioning profiles to the project
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Ensure CocoaPods deps
         script: |
       cd bagimliss/ios
