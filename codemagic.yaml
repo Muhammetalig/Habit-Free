@@ -72,4 +72,4 @@ workflows:
       app_store_connect:
         submit_to_testflight: true
         beta_groups:
-          - Internal Testers
+          - Internal Testing
