@@ -376,13 +376,29 @@ class _MyHomePageState extends State<MyHomePage> {
       text: _formatTime(TimeOfDay.fromDateTime(quitTime ?? DateTime.now())),
     );
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return Dialog.fullscreen(
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Bağımlılık Bilgileri'),
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF6D5DF6), Color(0xFF46C2CB)],
+                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                appBar: AppBar(
+                  title: const Text('Bağımlılık Bilgileri'),
               backgroundColor: Colors.transparent,
               elevation: 0,
             ),
@@ -652,6 +668,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+            );
+          },
         );
       },
     );

@@ -5,10 +5,10 @@ class WidgetHelper {
   // Use the fully qualified provider name as declared in AndroidManifest.xml
   static const String androidWidgetProvider =
       'com.example.bagimliss.SavingsWidgetProvider';
-  
+
   // iOS widget identifier
   static const String iOSWidgetName = 'SavingsWidget';
-  
+
   // App Group identifier for iOS
   static const String appGroupId = 'group.com.tasdemir.habitfree';
 
@@ -23,7 +23,7 @@ class WidgetHelper {
       }
     } catch (_) {}
   }
-  
+
   // Initialize widget settings
   static Future<void> initialize() async {
     try {
