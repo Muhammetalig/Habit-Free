@@ -1,6 +1,6 @@
 workflows:
   # ------------------------------
-  # ANDROID: Play Console'a yükleme yok; sadece AAB üretir.
+  # ANDROID: Yalnızca AAB üretir.
   # ------------------------------
   android_release:
     name: Android Release (AAB)
