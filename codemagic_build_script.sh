@@ -56,15 +56,12 @@ post_install do |installer|
 end
 RUBY
 
-# pbxproj içinde iOS deployment target'ı güvenli şekilde güncelle
+# pbxproj içinde sadece iOS deployment target'ı güvenli şekilde güncelle
 PBX="Runner.xcodeproj/project.pbxproj"
-
-# Sadece project-level ayarları değiştir, target-specific olanları Flutter yönetsin
 if [[ -f "$PBX" ]]; then
-  # iOS 12.0 ve 13.0 varsa 14.0 yap, ama sadece project-level settings'te
+  # Sadece iOS 12.0 ve 13.0 varsa 14.0 yap (güvenli)
   /usr/bin/sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 1[23]\.0;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' "$PBX" || true
-  
-  echo "✅ pbxproj dosyası güncellendi"
+  echo "✅ iOS deployment target güncellendi"
 else
   echo "⚠️  pbxproj dosyası bulunamadı"
 fi
@@ -85,7 +82,7 @@ BUILD_NUMBER="$(date -u +%Y%m%d%H%M)"
 echo "ℹ️  Build Name: $BUILD_NAME"
 echo "ℹ️  Build Number: $BUILD_NUMBER"
 
-# Derle - Flutter kendi version/build management'ını kullanacak
+# Flutter kendi version management'ını kullanarak derle
 flutter build ipa --release \
   --build-name="$BUILD_NAME" \
   --build-number="$BUILD_NUMBER"
