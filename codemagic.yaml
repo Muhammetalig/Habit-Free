@@ -5,13 +5,12 @@ workflows:
   android_release:
     name: Android Release (AAB)
     max_build_duration: 60
-    instance_type: mac_mini_m
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
-      android: latest
       vars:
-        ANDROID_API_LEVEL: "34"          # Gerektiğinde 35 yap
-        ANDROID_BUILD_TOOLS: "34.0.0"    # Gerektiğinde 35.0.0
+        ANDROID_API_LEVEL: "34"
+        ANDROID_BUILD_TOOLS: "34.0.0"
     cache:
       cache_paths:
         - ~/.pub-cache
@@ -43,7 +42,6 @@ workflows:
 
       - name: Ensure no explicit buildToolsVersion in app/build.gradle
         script: |
-          # buildToolsVersion satırı varsa kaldır; AGP otomatik seçsin
           sed -i '' -E '/buildToolsVersion/d' android/app/build.gradle || true
 
       - name: Flutter clean & pub get
@@ -61,19 +59,26 @@ workflows:
       - build/**/outputs/**/*.mapping.txt
 
   # ------------------------------
-  # iOS: TestFlight'a otomatik yükler (Internal Testing grubuna).
+  # iOS: TestFlight (Internal Testing grubuna).
   # ------------------------------
   ios_release:
     name: iOS Release (TestFlight)
     max_build_duration: 60
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
       vars:
-        APP_ID: "com.tasdemir.habitfree"   # Uygulama bundle id
-    triggers:
-      tag: true                             # v1.0.0 gibi bir tag ile tetiklenir
+        APP_ID: "com.tasdemir.habitfree"
+
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "*"
+          include: true
+
     scripts:
       - name: Flutter clean & pub get
         script: |
@@ -81,19 +86,16 @@ workflows:
           flutter clean
           flutter pub get
 
-      - name: Set up iOS deployment target (SAFE)
+      - name: Set iOS deployment target (SAFE)
         script: |
-          # Sadece iOS deployment target'ı güvenli şekilde güncelle
           PBX="ios/Runner.xcodeproj/project.pbxproj"
           if [[ -f "$PBX" ]]; then
             /usr/bin/sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 1[23]\.0;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' "$PBX" || true
-            echo "✅ iOS deployment target güncellendi"
           fi
 
       - name: Set up iOS code signing (App Store Connect)
         script: |
           keychain initialize
-          # Gerekli sertifika & profilleri App Store Connect'ten çek
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
@@ -104,17 +106,18 @@ workflows:
           pod install --repo-update
           cd ..
 
-      - name: Build iOS (IPA)
+      - name: Build iOS (IPA) using pubspec version + timestamp build number
         script: |
-          # pubspec.yaml'dan version'ı oku ve kullan
-          VERSION_INFO=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
-          VERSION_NAME=$(echo $VERSION_INFO | cut -d'+' -f1)
-          VERSION_CODE=$(echo $VERSION_INFO | cut -d'+' -f2)
-          echo "🔍 Version Name: $VERSION_NAME"
-          echo "🔍 Version Code: $VERSION_CODE"
+          BUILD_NAME=$(grep '^version:' pubspec.yaml | awk -F'[: +]' '{print $2}')
+          BUILD_NUMBER=$(date -u +%Y%m%d%H%M)
+          echo "Using BUILD_NAME=$BUILD_NAME BUILD_NUMBER=$BUILD_NUMBER"
+          GIT_SHA=$(git rev-parse --short HEAD)
+          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           flutter build ipa --release \
-            --build-name="$VERSION_NAME" \
-            --build-number="$VERSION_CODE"
+            --build-name="$BUILD_NAME" \
+            --build-number="$BUILD_NUMBER" \
+            --dart-define=GIT_SHA=$GIT_SHA \
+            --dart-define=PUBSPEC_VERSION=$PUBSPEC_VERSION
 
     artifacts:
       - build/ios/ipa/*.ipa
@@ -124,4 +127,5 @@ workflows:
     publishing:
       app_store_connect:
         submit_to_testflight: true
-        
+        beta_groups:
+          - Internal Testing
