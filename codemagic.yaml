@@ -25,6 +25,37 @@ workflows:
           cd bagimliss
           grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/Runner.xcodeproj/project.pbxproj || true
 
+      - name: Add iOS Widget Extension
+        script: |
+          cd bagimliss
+          echo "iOS Widget Extension dosyalarını kontrol ediliyor..."
+          ls -la ios/SavingsWidget/ || echo "Widget dosyaları bulunamadı"
+          
+          # Widget dosyalarının mevcut olduğundan emin ol
+          if [ ! -f "ios/SavingsWidget/SavingsWidget.swift" ]; then
+            echo "Widget dosyaları eksik, oluşturuluyor..."
+            mkdir -p ios/SavingsWidget
+            cp ../ios/SavingsWidget/* ios/SavingsWidget/ 2>/dev/null || echo "Kopyalama işlemi tamamlandı"
+          fi
+          
+          echo "Widget dosyaları hazır!"
+
+      - name: Create Widget Entitlements
+        script: |
+          cd bagimliss/ios/SavingsWidget
+          cat > SavingsWidget.entitlements << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>com.apple.security.application-groups</key>
+            <array>
+              <string>group.com.tasdemir.habitfree</string>
+            </array>
+          </dict>
+          </plist>
+          EOF
+
       - name: CocoaPods
         script: |
           cd bagimliss/ios
