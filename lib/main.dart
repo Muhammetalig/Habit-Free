@@ -59,6 +59,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationHelper.initialize();
   await NotificationHelper.requestPermission();
+  await WidgetHelper.initialize(); // Widget helper'ı initialize et
   await _setupWorkmanagerIfAndroid();
   runApp(const MyApp());
 }
