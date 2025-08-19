@@ -106,8 +106,15 @@ workflows:
 
       - name: Build iOS (IPA)
         script: |
-          # pubspec.yaml'dan version'ı al ve kullan
-          flutter build ipa --release
+          # pubspec.yaml'dan version'ı oku ve kullan
+          VERSION_INFO=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+          VERSION_NAME=$(echo $VERSION_INFO | cut -d'+' -f1)
+          VERSION_CODE=$(echo $VERSION_INFO | cut -d'+' -f2)
+          echo "🔍 Version Name: $VERSION_NAME"
+          echo "🔍 Version Code: $VERSION_CODE"
+          flutter build ipa --release \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE"
 
     artifacts:
       - build/ios/ipa/*.ipa
