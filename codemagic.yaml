@@ -1,4 +1,68 @@
 workflows:
+  # ------------------------------
+  # ANDROID: Play Console'a yükleme yok; sadece AAB üretir.
+  # ------------------------------
+  android_release:
+    name: Android Release (AAB)
+    max_build_duration: 60
+    instance_type: mac_mini_m
+    environment:
+      flutter: stable
+      android: latest
+      vars:
+        ANDROID_API_LEVEL: "34"          # Gerektiğinde 35 yap
+        ANDROID_BUILD_TOOLS: "34.0.0"    # Gerektiğinde 35.0.0
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+        - ~/.gradle/caches
+        - ~/.gradle/wrapper
+        - /usr/local/share/android-sdk
+    scripts:
+      - name: Accept Android SDK licenses
+        script: |
+          yes | sdkmanager --licenses
+
+      - name: Pre-install Android SDK components (with retries)
+        script: |
+          set -e
+          TO_INSTALL=("platform-tools" "platforms;android-${ANDROID_API_LEVEL}" "build-tools;${ANDROID_BUILD_TOOLS}")
+          for i in {1..3}; do
+            echo "Attempt $i to install SDK components..."
+            sdkmanager "${TO_INSTALL[@]}" && break || sleep 15
+            if [ "$i" -eq 3 ]; then
+              echo "Retrying once with --no_https ..."
+              sdkmanager --no_https "${TO_INSTALL[@]}"
+            fi
+          done
+
+      - name: Increase Gradle HTTP timeouts (optional)
+        script: |
+          echo "org.gradle.internal.http.socketTimeout=120000" >> android/gradle.properties
+          echo "org.gradle.internal.http.connectionTimeout=120000" >> android/gradle.properties
+
+      - name: Ensure no explicit buildToolsVersion in app/build.gradle
+        script: |
+          # buildToolsVersion satırı varsa kaldır; AGP otomatik seçsin
+          sed -i '' -E '/buildToolsVersion/d' android/app/build.gradle || true
+
+      - name: Flutter clean & pub get
+        script: |
+          flutter --version
+          flutter clean
+          flutter pub get
+
+      - name: Build Android AAB
+        script: |
+          flutter build appbundle --release
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+      - build/**/outputs/**/*.mapping.txt
+
+  # ------------------------------
+  # iOS: TestFlight'a otomatik yükler (Internal Testing grubuna).
+  # ------------------------------
   ios_release:
     name: iOS Release (TestFlight)
     max_build_duration: 60
@@ -7,66 +71,49 @@ workflows:
       xcode: latest
       cocoapods: default
       vars:
-        APP_ID: "com.tasdemir.habitfree"
-
+        APP_ID: "com.tasdemir.habitfree"   # Uygulama bundle id
     triggers:
-      tag: true
-
+      tag: true                             # v1.0.0 gibi bir tag ile tetiklenir
     scripts:
       - name: Flutter clean & pub get
         script: |
-          cd bagimliss
           flutter --version
           flutter clean
           flutter pub get
 
-      - name: Verify bundle id
+      - name: Set versions for Xcode (SAFE)
         script: |
-          cd bagimliss
-          grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/Runner.xcodeproj/project.pbxproj || true
+          # Xcode projeni FLUTTER_BUILD_* değişkenleriyle kontrol ettir.
+          /usr/bin/sed -i '' -E 's/(CURRENT_PROJECT_VERSION = ).*;/\1$(FLUTTER_BUILD_NUMBER);/' ios/Runner.xcodeproj/project.pbxproj
+          /usr/bin/sed -i '' -E 's/(MARKETING_VERSION = ).*;/\1$(FLUTTER_BUILD_NAME);/' ios/Runner.xcodeproj/project.pbxproj
 
-      - name: Add iOS Widget Extension
+      - name: Set up iOS code signing (App Store Connect)
         script: |
-          cd bagimliss
-          echo "iOS Widget Extension dosyalarını kontrol ediliyor..."
-          ls -la ios/SavingsWidget/ || echo "Widget dosyaları bulunamadı"
-          
-          # Widget dosyalarının mevcut olduğundan emin ol
-          if [ ! -f "ios/SavingsWidget/SavingsWidget.swift" ]; then
-            echo "Widget dosyaları eksik, oluşturuluyor..."
-            mkdir -p ios/SavingsWidget
-            cp ../ios/SavingsWidget/* ios/SavingsWidget/ 2>/dev/null || echo "Kopyalama işlemi tamamlandı"
-          fi
-          
-          echo "Widget dosyaları hazır!"
+          keychain initialize
+          # Gerekli sertifika & profilleri App Store Connect'ten çek
+          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
 
-      - name: Create Widget Entitlements
+      - name: CocoaPods install
         script: |
-          cd bagimliss/ios/SavingsWidget
-          cat > SavingsWidget.entitlements << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>com.apple.security.application-groups</key>
-            <array>
-              <string>group.com.tasdemir.habitfree</string>
-            </array>
-          </dict>
-          </plist>
-          EOF
-
-      - name: CocoaPods
-        script: |
-          cd bagimliss/ios
+          cd ios
           pod install --repo-update
+          cd ..
 
-      - name: Build iOS (release IPA)
+      - name: Build iOS (IPA)
         script: |
-          cd bagimliss
           BUILD_NAME=${CM_TAG:-1.0.0}
+          # Her build'te artan ve daima büyük bir numara ver (duplicate engeli için)
+          BUILD_NUMBER=$(date -u +%Y%m%d%H%M)
           flutter build ipa --release \
-            --build-name="$BUILD_NAME" --build-number="$CM_BUILD_ID"
+            --build-name="$BUILD_NAME" \
+            --build-number="$BUILD_NUMBER"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/archive/*.xcarchive
+      - build/ios/**/*.dSYM.zip
 
     publishing:
       app_store_connect:
