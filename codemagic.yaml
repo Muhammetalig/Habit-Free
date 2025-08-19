@@ -9,8 +9,8 @@ workflows:
     environment:
       flutter: stable
       vars:
-        ANDROID_API_LEVEL: "34"
-        ANDROID_BUILD_TOOLS: "34.0.0"
+        ANDROID_API_LEVEL: "34"          # Gerekirse 35 yap
+        ANDROID_BUILD_TOOLS: "34.0.0"    # Gerekirse 35.0.0
     cache:
       cache_paths:
         - ~/.pub-cache
@@ -42,6 +42,7 @@ workflows:
 
       - name: Ensure no explicit buildToolsVersion in app/build.gradle
         script: |
+          # buildToolsVersion satırı varsa kaldır; AGP otomatik seçecek
           sed -i '' -E '/buildToolsVersion/d' android/app/build.gradle || true
 
       - name: Flutter clean & pub get
@@ -59,7 +60,7 @@ workflows:
       - build/**/outputs/**/*.mapping.txt
 
   # ------------------------------
-  # iOS: TestFlight (Internal Testing grubuna).
+  # iOS: TestFlight (Internal Testing grubuna gönderir)
   # ------------------------------
   ios_release:
     name: iOS Release (TestFlight)
@@ -72,6 +73,7 @@ workflows:
       vars:
         APP_ID: "com.tasdemir.habitfree"
 
+    # Tag atınca otomatik tetiklensin (örn. v1.0.2)
     triggering:
       events:
         - tag
@@ -109,7 +111,7 @@ workflows:
       - name: Build iOS (IPA) using pubspec version + timestamp build number
         script: |
           BUILD_NAME=$(grep '^version:' pubspec.yaml | awk -F'[: +]' '{print $2}')
-          BUILD_NUMBER=$(date -u +%Y%m%d%H%M)
+          BUILD_NUMBER=$(date -u +%Y%m%d%H%M)   # benzersiz numara
           echo "Using BUILD_NAME=$BUILD_NAME BUILD_NUMBER=$BUILD_NUMBER"
           GIT_SHA=$(git rev-parse --short HEAD)
           PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
