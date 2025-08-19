@@ -399,275 +399,281 @@ class _MyHomePageState extends State<MyHomePage> {
                 backgroundColor: Colors.transparent,
                 appBar: AppBar(
                   title: const Text('Bağımlılık Bilgileri'),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            ),
-            body: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF6D5DF6), Color(0xFF46C2CB)],
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
                 ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: 24.0,
-                    bottom: 24.0 + MediaQuery.of(context).viewInsets.bottom,
+                body: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF6D5DF6), Color(0xFF46C2CB)],
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(height: 20),
-                              Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    children: [
-                                      TextField(
-                                        controller: quitTimeController,
-                                        readOnly: true,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Bırakma Tarihi',
-                                          hintText:
-                                              'Takvimden seçmek için dokun',
-                                          suffixIcon: Icon(
-                                            Icons.calendar_today,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 24.0,
+                        right: 24.0,
+                        top: 24.0,
+                        bottom: 24.0 + MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: 20),
+                                  Card(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        children: [
+                                          TextField(
+                                            controller: quitTimeController,
+                                            readOnly: true,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Bırakma Tarihi',
+                                              hintText:
+                                                  'Takvimden seçmek için dokun',
+                                              suffixIcon: Icon(
+                                                Icons.calendar_today,
+                                              ),
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            onTap: () async {
+                                              FocusScope.of(
+                                                context,
+                                              ).requestFocus(FocusNode());
+                                              final now = DateTime.now();
+                                              final initial = quitTime ?? now;
+                                              final picked =
+                                                  await showDatePicker(
+                                                    context: context,
+                                                    initialDate:
+                                                        initial.isAfter(now)
+                                                            ? now
+                                                            : initial,
+                                                    firstDate: DateTime(
+                                                      now.year - 50,
+                                                    ),
+                                                    lastDate: now,
+                                                    helpText:
+                                                        'Bırakma Tarihini Seç',
+                                                    cancelText: 'İptal',
+                                                    confirmText: 'Seç',
+                                                  );
+                                              if (picked != null) {
+                                                quitTimeController
+                                                    .text = _formatDate(picked);
+                                              }
+                                            },
                                           ),
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        onTap: () async {
-                                          FocusScope.of(
-                                            context,
-                                          ).requestFocus(FocusNode());
-                                          final now = DateTime.now();
-                                          final initial = quitTime ?? now;
-                                          final picked = await showDatePicker(
-                                            context: context,
-                                            initialDate:
-                                                initial.isAfter(now)
-                                                    ? now
-                                                    : initial,
-                                            firstDate: DateTime(now.year - 50),
-                                            lastDate: now,
-                                            helpText: 'Bırakma Tarihini Seç',
-                                            cancelText: 'İptal',
-                                            confirmText: 'Seç',
-                                          );
-                                          if (picked != null) {
-                                            quitTimeController
-                                                .text = _formatDate(picked);
-                                          }
-                                        },
+                                          const SizedBox(height: 16),
+                                          TextField(
+                                            controller: timeController,
+                                            readOnly: true,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Saat',
+                                              hintText:
+                                                  'Saat seçmek için dokun',
+                                              suffixIcon: Icon(
+                                                Icons.access_time,
+                                              ),
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            onTap: () async {
+                                              FocusScope.of(
+                                                context,
+                                              ).requestFocus(FocusNode());
+                                              final initial =
+                                                  TimeOfDay.fromDateTime(
+                                                    quitTime ?? DateTime.now(),
+                                                  );
+                                              final picked =
+                                                  await showTimePicker(
+                                                    context: context,
+                                                    initialTime: initial,
+                                                    helpText: 'Saati Seç',
+                                                    cancelText: 'İptal',
+                                                    confirmText: 'Seç',
+                                                  );
+                                              if (picked != null) {
+                                                timeController
+                                                    .text = _formatTime(picked);
+                                              }
+                                            },
+                                          ),
+                                          const SizedBox(height: 16),
+                                          TextField(
+                                            controller: costController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Günlük Maliyet (TL)',
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                          ),
+                                          const SizedBox(height: 16),
+                                          TextField(
+                                            controller: amountController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Günlük Miktar',
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 16),
-                                      TextField(
-                                        controller: timeController,
-                                        readOnly: true,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Saat',
-                                          hintText: 'Saat seçmek için dokun',
-                                          suffixIcon: Icon(Icons.access_time),
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        onTap: () async {
-                                          FocusScope.of(
-                                            context,
-                                          ).requestFocus(FocusNode());
-                                          final initial =
-                                              TimeOfDay.fromDateTime(
-                                                quitTime ?? DateTime.now(),
-                                              );
-                                          final picked = await showTimePicker(
-                                            context: context,
-                                            initialTime: initial,
-                                            helpText: 'Saati Seç',
-                                            cancelText: 'İptal',
-                                            confirmText: 'Seç',
-                                          );
-                                          if (picked != null) {
-                                            timeController.text = _formatTime(
-                                              picked,
-                                            );
-                                          }
-                                        },
-                                      ),
-                                      const SizedBox(height: 16),
-                                      TextField(
-                                        controller: costController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Günlük Maliyet (TL)',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        keyboardType: TextInputType.number,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      TextField(
-                                        controller: amountController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Günlük Miktar',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        keyboardType: TextInputType.number,
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 20),
+                                ],
                               ),
-                              const SizedBox(height: 20),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('İptal'),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    final parsedCost = double.tryParse(
-                                      costController.text.trim().replaceAll(
-                                        ',',
-                                        '.',
-                                      ),
-                                    );
-                                    final parsedAmount = double.tryParse(
-                                      amountController.text.trim().replaceAll(
-                                        ',',
-                                        '.',
-                                      ),
-                                    );
-                                    if (parsedCost == null ||
-                                        parsedAmount == null) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Önce maliyet ve miktarı girin (örn: 60 ve 1 veya 0,5).',
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(),
+                                      child: const Text('İptal'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        final parsedCost = double.tryParse(
+                                          costController.text.trim().replaceAll(
+                                            ',',
+                                            '.',
                                           ),
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    setState(() {
-                                      quitTime = DateTime.now();
-                                      dailyCost = parsedCost;
-                                      dailyAmount = parsedAmount;
-                                    });
-                                    _startTicker();
-                                    _persistState();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Şu an'),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    final parsedDate = _parseDateFlexible(
-                                      quitTimeController.text.trim(),
-                                    );
-                                    final parsedTime = _parseTimeFlexible(
-                                      timeController.text.trim(),
-                                    );
-                                    final parsedCost = double.tryParse(
-                                      costController.text.trim().replaceAll(
-                                        ',',
-                                        '.',
-                                      ),
-                                    );
-                                    final parsedAmount = double.tryParse(
-                                      amountController.text.trim().replaceAll(
-                                        ',',
-                                        '.',
-                                      ),
-                                    );
+                                        );
+                                        final parsedAmount = double.tryParse(
+                                          amountController.text
+                                              .trim()
+                                              .replaceAll(',', '.'),
+                                        );
+                                        if (parsedCost == null ||
+                                            parsedAmount == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Önce maliyet ve miktarı girin (örn: 60 ve 1 veya 0,5).',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        setState(() {
+                                          quitTime = DateTime.now();
+                                          dailyCost = parsedCost;
+                                          dailyAmount = parsedAmount;
+                                        });
+                                        _startTicker();
+                                        _persistState();
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Şu an'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        final parsedDate = _parseDateFlexible(
+                                          quitTimeController.text.trim(),
+                                        );
+                                        final parsedTime = _parseTimeFlexible(
+                                          timeController.text.trim(),
+                                        );
+                                        final parsedCost = double.tryParse(
+                                          costController.text.trim().replaceAll(
+                                            ',',
+                                            '.',
+                                          ),
+                                        );
+                                        final parsedAmount = double.tryParse(
+                                          amountController.text
+                                              .trim()
+                                              .replaceAll(',', '.'),
+                                        );
 
-                                    if (parsedDate == null) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Tarih formatı geçersiz. Örn: 16.08.2025 veya 2025-08-16',
-                                          ),
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    if (parsedTime == null) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Saat formatı geçersiz. Örn: 14:30',
-                                          ),
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    if (parsedCost == null ||
-                                        parsedAmount == null) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Maliyet ve miktar sayı olmalı. Örn: 60 veya 0,5',
-                                          ),
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    final combined = DateTime(
-                                      parsedDate.year,
-                                      parsedDate.month,
-                                      parsedDate.day,
-                                      parsedTime.hour,
-                                      parsedTime.minute,
-                                    );
-                                    setState(() {
-                                      quitTime = combined;
-                                      dailyCost = parsedCost;
-                                      dailyAmount = parsedAmount;
-                                    });
-                                    _startTicker();
-                                    _persistState();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Kaydet'),
-                                ),
+                                        if (parsedDate == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Tarih formatı geçersiz. Örn: 16.08.2025 veya 2025-08-16',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        if (parsedTime == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Saat formatı geçersiz. Örn: 14:30',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        if (parsedCost == null ||
+                                            parsedAmount == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Maliyet ve miktar sayı olmalı. Örn: 60 veya 0,5',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        final combined = DateTime(
+                                          parsedDate.year,
+                                          parsedDate.month,
+                                          parsedDate.day,
+                                          parsedTime.hour,
+                                          parsedTime.minute,
+                                        );
+                                        setState(() {
+                                          quitTime = combined;
+                                          dailyCost = parsedCost;
+                                          dailyAmount = parsedAmount;
+                                        });
+                                        _startTicker();
+                                        _persistState();
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Kaydet'),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
             );
           },
         );
