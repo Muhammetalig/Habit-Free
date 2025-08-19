@@ -127,7 +127,11 @@ workflows:
       - build/ios/**/*.dSYM.zip
 
     publishing:
-      app_store_connect:
-        submit_to_testflight: true
-        beta_groups:
-          - Internal Testing
+  app_store_connect:
+    api_key:
+      key_id: $APP_STORE_CONNECT_KEY_ID
+      issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+      key: $APP_STORE_CONNECT_PRIVATE_KEY
+    submit_to_testflight: true
+    beta_groups:
+      - Internal Testing
