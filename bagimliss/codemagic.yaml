@@ -52,14 +52,6 @@ workflows:
 
     publishing:
       app_store_connect:
-        # App Store Connect API key'ini Codemagic Integrations'tan bağladıysan
-        # bu "api_key" blokunu YAZMAN GEREKMEZ. Codemagic otomatik kullanır.
-        #
-        # Eğer ENV değişkenleriyle vermek istersen, aşağıdaki 3 satırı aç:
-        # api_key:
-        #   key_id: $APP_STORE_CONNECT_KEY_ID
-        #   issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        #   key: $APP_STORE_CONNECT_PRIVATE_KEY
         submit_to_testflight: true
         beta_groups:
-          - Internal Testers
+          - Internal Testing
