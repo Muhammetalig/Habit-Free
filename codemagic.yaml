@@ -124,5 +124,4 @@ workflows:
     publishing:
       app_store_connect:
         submit_to_testflight: true
-        beta_groups:
-          - Internal Testing
+        
