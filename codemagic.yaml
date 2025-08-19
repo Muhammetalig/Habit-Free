@@ -67,13 +67,15 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
+      groups:
+        - Ali                      # ← Environment variables sayfasındaki grup adın
       flutter: stable
       xcode: latest
       cocoapods: default
       vars:
         APP_ID: "com.tasdemir.habitfree"
 
-    # Tag atınca otomatik tetiklensin (örn. v1.0.2)
+    # Tag atınca otomatik tetiklensin (örn. v1.0.2, v1.0.3 ...)
     triggering:
       events:
         - tag
@@ -127,11 +129,11 @@ workflows:
       - build/ios/**/*.dSYM.zip
 
     publishing:
-  app_store_connect:
-    api_key:
-      key_id: $APP_STORE_CONNECT_KEY_ID
-      issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-      key: $APP_STORE_CONNECT_PRIVATE_KEY
-    submit_to_testflight: true
-    beta_groups:
-      - Internal Testing
+      app_store_connect:
+        api_key:
+          key_id: $APP_STORE_CONNECT_KEY_ID
+          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+          key: $APP_STORE_CONNECT_PRIVATE_KEY
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testing
