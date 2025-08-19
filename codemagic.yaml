@@ -81,11 +81,14 @@ workflows:
           flutter clean
           flutter pub get
 
-      - name: Set versions for Xcode (SAFE)
+      - name: Set up iOS deployment target (SAFE)
         script: |
-          # Xcode projeni FLUTTER_BUILD_* değişkenleriyle kontrol ettir.
-          /usr/bin/sed -i '' -E 's/(CURRENT_PROJECT_VERSION = ).*;/\1$(FLUTTER_BUILD_NUMBER);/' ios/Runner.xcodeproj/project.pbxproj
-          /usr/bin/sed -i '' -E 's/(MARKETING_VERSION = ).*;/\1$(FLUTTER_BUILD_NAME);/' ios/Runner.xcodeproj/project.pbxproj
+          # Sadece iOS deployment target'ı güvenli şekilde güncelle
+          PBX="ios/Runner.xcodeproj/project.pbxproj"
+          if [[ -f "$PBX" ]]; then
+            /usr/bin/sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 1[23]\.0;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' "$PBX" || true
+            echo "✅ iOS deployment target güncellendi"
+          fi
 
       - name: Set up iOS code signing (App Store Connect)
         script: |
