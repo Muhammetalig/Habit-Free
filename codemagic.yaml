@@ -100,7 +100,14 @@ workflows:
       - name: Set up iOS code signing (App Store Connect)
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
+          echo "Using API Key ID: $APP_STORE_CONNECT_KEY_ID"
+          echo "Using Issuer ID: $APP_STORE_CONNECT_ISSUER_ID"
+          app-store-connect fetch-signing-files "$APP_ID" \
+            --type IOS_APP_STORE \
+            --create \
+            --api-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            --api-key-id "$APP_STORE_CONNECT_KEY_ID" \
+            --api-issuer-id "$APP_STORE_CONNECT_ISSUER_ID"
           keychain add-certificates
           xcode-project use-profiles
 
