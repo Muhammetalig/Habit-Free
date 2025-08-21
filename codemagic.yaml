@@ -73,7 +73,7 @@ workflows:
       xcode: latest
       cocoapods: default
       vars:
-        APP_ID: "com.tasdemir.habitfree"
+        APP_ID: "com.tasdemir.habittrackerpro"
 
     # Tag atınca otomatik tetiklensin (örn. v1.0.2, v1.0.3 ...)
     triggering:
@@ -135,5 +135,3 @@ workflows:
           issuer_id: $APP_STORE_CONNECT_ISSUER_ID
           key: $APP_STORE_CONNECT_PRIVATE_KEY
         submit_to_testflight: true
-        beta_groups:
-          - Internal Testing
