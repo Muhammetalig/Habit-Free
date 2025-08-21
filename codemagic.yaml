@@ -112,10 +112,11 @@ workflows:
           echo "Setting Bundle ID to $APP_ID"
           sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" ios/Runner.xcodeproj/project.pbxproj
 
-      - name: Build iOS (IPA) using pubspec version + timestamp build number
+      - name: Build iOS (IPA) using pubspec version
         script: |
-          BUILD_NAME=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
-          BUILD_NUMBER=$(date -u +%Y%m%d%H%M)
+          VERSION_INFO=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+          BUILD_NAME=$(echo $VERSION_INFO | cut -d'+' -f1)
+          BUILD_NUMBER=$(echo $VERSION_INFO | cut -d'+' -f2)
           echo "Using BUILD_NAME=$BUILD_NAME BUILD_NUMBER=$BUILD_NUMBER"
           flutter build ipa --release \
             --build-name="$BUILD_NAME" \
