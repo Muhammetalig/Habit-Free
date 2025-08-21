@@ -1,6 +1,0 @@
-# Copy this file to android/key.properties and fill with your keystore info.
-# Do NOT commit the filled key.properties to version control.
-storeFile=../keystore/release.keystore
-storePassword=CHANGEME
-keyAlias=upload
-keyPassword=CHANGEME
