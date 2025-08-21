@@ -110,18 +110,19 @@ workflows:
           pod install --repo-update
           cd ..
 
+      - name: Set iOS Bundle Identifier
+        script: |
+          echo "Setting Bundle ID to $APP_ID"
+          sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" ios/Runner.xcodeproj/project.pbxproj
+
       - name: Build iOS (IPA) using pubspec version + timestamp build number
         script: |
-          BUILD_NAME=$(grep '^version:' pubspec.yaml | awk -F'[: +]' '{print $2}')
-          BUILD_NUMBER=$(date -u +%Y%m%d%H%M)   # benzersiz numara
+          BUILD_NAME=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+          BUILD_NUMBER=$(date -u +%Y%m%d%H%M)
           echo "Using BUILD_NAME=$BUILD_NAME BUILD_NUMBER=$BUILD_NUMBER"
-          GIT_SHA=$(git rev-parse --short HEAD)
-          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           flutter build ipa --release \
             --build-name="$BUILD_NAME" \
-            --build-number="$BUILD_NUMBER" \
-            --dart-define=GIT_SHA=$GIT_SHA \
-            --dart-define=PUBSPEC_VERSION=$PUBSPEC_VERSION
+            --build-number="$BUILD_NUMBER"
 
     artifacts:
       - build/ios/ipa/*.ipa
