@@ -97,14 +97,9 @@ workflows:
             /usr/bin/sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 1[23]\.0;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' "$PBX" || true
           fi
 
-      - name: Set up iOS code signing (App Store Connect)
+      - name: Set up iOS code signing (Automatic)
         script: |
-          keychain initialize
-          echo "Using API Key ID: $APP_STORE_CONNECT_KEY_IDENTIFIER"
-          echo "Using Issuer ID: $APP_STORE_CONNECT_ISSUER_ID"
-          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
-          keychain add-certificates
-          xcode-project use-profiles
+          echo "Using automatic code signing from Codemagic UI"
 
       - name: CocoaPods install
         script: |
