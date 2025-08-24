@@ -81,8 +81,8 @@ struct SavingsWidget: Widget {
         IntentConfiguration(kind: kind, intent: ConfigurationIntent.self, provider: SavingsProvider()) { entry in
             SavingsWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Bağımlılık Tasarruf")
-        .description("Tasarruf ettiğiniz tutarı gösterir.")
+        .configurationDisplayName("Habit Free Tasarruf")
+        .description("Bağımlılığı bırakarak tasarruf ettiğiniz tutarı gösterir.")
         .supportedFamilies([.systemSmall])
     }
 }

@@ -111,6 +111,17 @@ workflows:
           echo "Setting Bundle ID to $APP_ID"
           sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" ios/Runner.xcodeproj/project.pbxproj
 
+      - name: Ensure Widget Extension is included
+        script: |
+          echo "Checking if SavingsWidget extension exists..."
+          if [[ -d "ios/SavingsWidget" ]]; then
+            echo "✅ Widget extension found"
+            ls -la ios/SavingsWidget/
+          else
+            echo "❌ Widget extension not found"
+            exit 1
+          fi
+
       - name: Build iOS (IPA) using pubspec version
         script: |
           VERSION_INFO=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
