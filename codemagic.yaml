@@ -103,26 +103,23 @@ workflows:
 
       - name: CocoaPods install
         script: |
-          cd bagimliss/ios
+          cd ios
           pod install --repo-update
-          cd ../..
 
       - name: Set iOS Bundle Identifier
         script: |
           echo "Setting Bundle ID to $APP_ID"
-          sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" bagimliss/ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' "s/com\.example\.bagimliss/$APP_ID/g" ios/Runner.xcodeproj/project.pbxproj
 
       - name: Build iOS (IPA) using pubspec version
         script: |
-          VERSION_INFO=$(grep '^version:' bagimliss/pubspec.yaml | cut -d' ' -f2)
+          VERSION_INFO=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
           BUILD_NAME=$(echo $VERSION_INFO | cut -d'+' -f1)
           BUILD_NUMBER=$(echo $VERSION_INFO | cut -d'+' -f2)
           echo "Using BUILD_NAME=$BUILD_NAME BUILD_NUMBER=$BUILD_NUMBER"
-          cd bagimliss
           flutter build ipa --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER"
-          cd ..
 
     artifacts:
       - build/ios/ipa/*.ipa
