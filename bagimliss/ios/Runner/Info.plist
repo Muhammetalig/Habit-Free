@@ -45,11 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>background-processing</string>
-		<string>background-fetch</string>
-	</array>
+
 	<key>NSUserNotificationUsageDescription</key>
 	<string>Bu uygulama size motivasyon bildirimleri ve hatırlatmalar göndermek için bildirim izni istiyor.</string>
 </dict>
