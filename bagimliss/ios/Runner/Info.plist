@@ -48,5 +48,9 @@
 
 	<key>NSUserNotificationUsageDescription</key>
 	<string>Bu uygulama size motivasyon bildirimleri ve hatırlatmalar göndermek için bildirim izni istiyor.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>ITSEncryptionExportComplianceCode</key>
+	<string>None</string>
 </dict>
 </plist>
